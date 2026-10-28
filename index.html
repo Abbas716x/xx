@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAPE POS SYSTEM | نظام المبيعات</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Cairo & Orbitron -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0B0F19;
+            color: #E2E8F0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .num-font { font-family: 'Orbitron', monospace; }
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .neon-border:focus-within {
+            border-color: #10B981;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0B0F19; }
+        ::-webkit-scrollbar-thumb { background: #1F2937; border-radius: 4px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- Navbar / Header -->
+    <header class="glass-panel sticky top-0 z-30 px-4 py-3 flex items-center justify-between border-b border-gray-800">
+        <div class="flex items-center gap-3">
+            <button id="menu-btn" class="w-10 h-10 rounded-xl bg-gray-800/80 hover:bg-gray-700 flex items-center justify-center text-emerald-400 text-xl transition active:scale-95">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <h1 class="font-extrabold text-lg text-white tracking-wide">VAPE <span class="text-emerald-400">POS</span></h1>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-xs text-gray-400 font-semibold">متصل محلياً</span>
+        </div>
+    </header>
+
+    <!-- Sidebar Drawer (3 Lines Menu) -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden transition-opacity duration-300"></div>
+    <aside id="sidebar" class="fixed top-0 right-0 h-full w-72 bg-gray-900 border-l border-gray-800 z-50 transform translate-x-full transition-transform duration-300 flex flex-col justify-between p-5">
+        <div>
+            <div class="flex items-center justify-between pb-6 mb-6 border-b border-gray-800">
+                <h2 class="text-lg font-bold text-emerald-400 flex items-center gap-2">
+                    <i class="fa-solid fa-bolt"></i> القائمة الرئيسية
+                </h2>
+                <button id="close-sidebar-btn" class="text-gray-400 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <nav class="space-y-2">
+                <button onclick="app.switchTab('pos')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition text-right text-emerald-400 bg-emerald-500/10 border border-emerald-500/30" data-tab="pos">
+                    <i class="fa-solid fa-cash-register w-6 text-center"></i> شاشة البيع السريع
+                </button>
+                <button onclick="app.switchTab('revenue')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition text-right text-gray-400 hover:bg-gray-800 hover:text-white" data-tab="revenue">
+                    <i class="fa-solid fa-chart-line w-6 text-center"></i> تقارير الإيرادات
+                </button>
+                <button onclick="app.switchTab('invoices')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition text-right text-gray-400 hover:bg-gray-800 hover:text-white" data-tab="invoices">
+                    <i class="fa-solid fa-receipt w-6 text-center"></i> سجل الفواتير
+                </button>
+            </nav>
+        </div>
+
+        <div class="text-xs text-gray-500 text-center border-t border-gray-800 pt-4">
+            تطبيق كاشير الفيب v2.5 | جاهز للربط السحابي
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 p-4 max-w-lg mx-auto w-full">
+
+        <!-- SECTION 1: QUICK POS (قسم البيع) -->
+        <section id="tab-pos" class="space-y-5">
+            <!-- 1. Category Fast Selection -->
+            <div class="space-y-2">
+                <label class="text-xs text-gray-400 font-bold block">1. اختر نوع القطعة:</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button type="button" onclick="app.selectCategory('سحبة')" class="cat-btn py-3 px-2 rounded-xl bg-gray-800 border border-emerald-500/50 text-emerald-400 font-bold text-center transition active:scale-95" data-cat="سحبة">سحبة</button>
+                    <button type="button" onclick="app.selectCategory('كاترج')" class="cat-btn py-3 px-2 rounded-xl bg-gray-800/60 border border-gray-700 text-gray-300 font-bold text-center transition active:scale-95" data-cat="كاترج">كاترج</button>
+                    <button type="button" onclick="app.selectCategory('بطارية')" class="cat-btn py-3 px-2 rounded-xl bg-gray-800/60 border border-gray-700 text-gray-300 font-bold text-center transition active:scale-95" data-cat="بطارية">بطارية</button>
+                    <button type="button" onclick="app.selectCategory('جوز/نكهة')" class="cat-btn py-3 px-2 rounded-xl bg-gray-800/60 border border-gray-700 text-gray-300 font-bold text-center transition active:scale-95" data-cat="جوز/نكهة">جوز/نكهة</button>
+                    <button type="button" onclick="app.selectCategory('كويل')" class="cat-btn py-3 px-2 rounded-xl bg-gray-800/60 border border-gray-700 text-gray-300 font-bold text-center transition active:scale-95" data-cat="كويل">كويل</button>
+                    <button type="button" onclick="app.selectCategory('جهاز')" class="cat-btn py-3 px-2 rounded-xl bg-gray-800/60 border border-gray-700 text-gray-300 font-bold text-center transition active:scale-95" data-cat="جهاز">جهاز</button>
+                </div>
+            </div>
+
+            <!-- 2. Direct Price Input -->
+            <div class="glass-panel p-4 rounded-2xl space-y-3 border border-gray-800 neon-border">
+                <label for="price-input" class="text-xs text-gray-400 font-bold flex justify-between">
+                    <span>2. ادخل السعر مباشرة:</span>
+                    <span class="text-emerald-400 font-semibold">مثال: يكتب 18 تحسب 18,000 د.ع</span>
+                </label>
+                
+                <div class="relative flex items-center">
+                    <input type="number" id="price-input" placeholder="0" autofocus min="1" step="any"
+                        class="w-full bg-gray-900 border border-gray-700 text-emerald-400 text-3xl font-extrabold rounded-xl py-3 px-4 text-left num-font focus:outline-none focus:border-emerald-500 transition">
+                    <span class="absolute right-4 text-gray-400 font-bold text-sm pointer-events-none">د.ع</span>
+                </div>
+
+                <!-- Shortcuts for Quick Amounts -->
+                <div class="flex gap-2 pt-1">
+                    <button type="button" onclick="app.setQuickPrice(3)" class="flex-1 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs font-bold num-font">3,000</button>
+                    <button type="button" onclick="app.setQuickPrice(6)" class="flex-1 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs font-bold num-font">6,000</button>
+                    <button type="button" onclick="app.setQuickPrice(15)" class="flex-1 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs font-bold num-font">15,000</button>
+                    <button type="button" onclick="app.setQuickPrice(18)" class="flex-1 py-1.5 bg-emerald-950 text-emerald-400 border border-emerald-800/50 rounded-lg text-xs font-bold num-font">18,000</button>
+                </div>
+            </div>
+
+            <!-- Submit Sale Button -->
+            <button onclick="app.processSale()" class="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-black text-lg rounded-2xl shadow-lg shadow-emerald-500/20 active:scale-95 transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-check-circle text-xl"></i> إتمام البيع والتسجيل
+            </button>
+        </section>
+
+
+        <!-- SECTION 2: REVENUE DASHBOARD (قسم الإيرادات) -->
+        <section id="tab-revenue" class="space-y-4 hidden">
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-emerald-400"></i> ملخص الإيرادات المالية
+            </h2>
+
+            <div class="grid grid-cols-1 gap-3">
+                <!-- Today -->
+                <div class="glass-panel p-4 rounded-2xl border-r-4 border-r-emerald-500">
+                    <span class="text-xs text-gray-400 font-bold block mb-1">إيراد مبيعات اليوم (اليوم):</span>
+                    <div class="text-3xl font-black text-emerald-400 num-font" id="rev-today">0 د.ع</div>
+                </div>
+
+                <!-- Yesterday -->
+                <div class="glass-panel p-4 rounded-2xl border-r-4 border-r-cyan-500">
+                    <span class="text-xs text-gray-400 font-bold block mb-1">إيراد يوم الأمس (المطحل):</span>
+                    <div class="text-2xl font-bold text-cyan-300 num-font" id="rev-yesterday">0 د.ع</div>
+                </div>
+
+                <!-- Month -->
+                <div class="glass-panel p-4 rounded-2xl border-r-4 border-r-purple-500">
+                    <span class="text-xs text-gray-400 font-bold block mb-1">إيراد الشهر الحالي التراكمي:</span>
+                    <div class="text-2xl font-bold text-purple-300 num-font" id="rev-month">0 د.ع</div>
+                </div>
+            </div>
+
+            <!-- Reset Day Button -->
+            <div class="pt-4">
+                <button onclick="app.confirmResetDay()" class="w-full py-3.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition active:scale-95">
+                    <i class="fa-solid fa-rotate text-lg"></i> تصفير اليوم وترحيل الإيراد للشهر
+                </button>
+                <p class="text-[11px] text-gray-500 text-center mt-2">يقوم بتصفير إيراد اليوم ونقله للأمس وإضافته كلياً للحساب الشهري</p>
+            </div>
+        </section>
+
+
+        <!-- SECTION 3: INVOICES HISTORY (قسم الفواتير) -->
+        <section id="tab-invoices" class="space-y-4 hidden">
+            <div class="flex items-center justify-between">
+                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-clock-history text-emerald-400"></i> سجل الفواتير والمبيعات
+                </h2>
+                <span id="invoice-count" class="text-xs font-bold text-gray-400 bg-gray-800 px-2.5 py-1 rounded-full">0 فاتورة</span>
+            </div>
+
+            <div id="invoices-list" class="space-y-2.5 max-h-[70vh] overflow-y-auto pr-1">
+                <!-- Invoices rendered dynamically -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Notification System -->
+    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-gray-950 font-extrabold px-6 py-3 rounded-full shadow-2xl transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center gap-2">
+        <i class="fa-solid fa-circle-check"></i> <span id="toast-msg">تم الحفظ بنجاح</span>
+    </div>
+
+    <!-- Application Controller Logic -->
+    <script>
+        /**
+         * System Core Controller Architecture
+         */
+        class VapePOSApp {
+            constructor() {
+                this.selectedCategory = 'سحبة';
+                this.data = this.loadData();
+                this.initUI();
+            }
+
+            loadData() {
+                const defaultData = {
+                    today: 0,
+                    yesterday: 0,
+                    month: 0,
+                    invoices: []
+                };
+                const saved = localStorage.getItem('vape_pos_db');
+                return saved ? JSON.parse(saved) : defaultData;
+            }
+
+            saveData() {
+                localStorage.setItem('vape_pos_db', JSON.stringify(this.data));
+                this.updateRevenueUI();
+                this.renderInvoices();
+            }
+
+            initUI() {
+                this.bindEvents();
+                this.updateRevenueUI();
+                this.renderInvoices();
+            }
+
+            bindEvents() {
+                // Sidebar toggle
+                const menuBtn = document.getElementById('menu-btn');
+                const closeBtn = document.getElementById('close-sidebar-btn');
+                const overlay = document.getElementById('sidebar-overlay');
+                const sidebar = document.getElementById('sidebar');
+
+                const openMenu = () => {
+                    sidebar.classList.remove('translate-x-full');
+                    overlay.classList.remove('hidden');
+                };
+                const closeMenu = () => {
+                    sidebar.classList.add('translate-x-full');
+                    overlay.classList.add('hidden');
+                };
+
+                menuBtn.addEventListener('click', openMenu);
+                closeBtn.addEventListener('click', closeMenu);
+                overlay.addEventListener('click', closeMenu);
+
+                // Auto parse keyboard shortcut numbers
+                document.getElementById('price-input').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        this.processSale();
+                    }
+                });
+            }
+
+            switchTab(tabName) {
+                document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+                document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    if(btn.getAttribute('data-tab') === tabName) {
+                        btn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition text-right text-emerald-400 bg-emerald-500/10 border border-emerald-500/30";
+                    } else {
+                        btn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition text-right text-gray-400 hover:bg-gray-800 hover:text-white";
+                    }
+                });
+
+                document.getElementById('sidebar-overlay').click(); // Close drawer
+            }
+
+            selectCategory(cat) {
+                this.selectedCategory = cat;
+                document.querySelectorAll('.cat-btn').forEach(btn => {
+                    if(btn.getAttribute('data-cat') === cat) {
+                        btn.className = "cat-btn py-3 px-2 rounded-xl bg-gray-800 border border-emerald-500/50 text-emerald-400 font-bold text-center transition active:scale-95";
+                    } else {
+                        btn.className = "cat-btn py-3 px-2 rounded-xl bg-gray-800/60 border border-gray-700 text-gray-300 font-bold text-center transition active:scale-95";
+                    }
+                });
+            }
+
+            setQuickPrice(val) {
+                document.getElementById('price-input').value = val;
+            }
+
+            parseAmount(inputVal) {
+                let num = parseFloat(inputVal);
+                if (isNaN(num) || num <= 0) return 0;
+                // If user types small shortcut numbers like 18 or 6, treat as thousands (18000 or 6000)
+                if (num < 1000) {
+                    num = num * 1000;
+                }
+                return num;
+            }
+
+            processSale() {
+                const inputEl = document.getElementById('price-input');
+                const rawVal = inputEl.value;
+                const finalAmount = this.parseAmount(rawVal);
+
+                if (finalAmount <= 0) {
+                    this.showToast('يرجى كتابة السعر أولاً', 'rose');
+                    return;
+                }
+
+                const newInvoice = {
+                    id: Date.now(),
+                    category: this.selectedCategory,
+                    amount: finalAmount,
+                    time: new Date().toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' }),
+                    date: new Date().toLocaleDateString('ar-IQ')
+                };
+
+                this.data.today += finalAmount;
+                this.data.month += finalAmount;
+                this.data.invoices.unshift(newInvoice);
+
+                this.saveData();
+                inputEl.value = '';
+                this.showToast(`تم بيع ${this.selectedCategory} بـ ${finalAmount.toLocaleString()} د.ع`);
+            }
+
+            confirmResetDay() {
+                if (this.data.today === 0) {
+                    this.showToast('إيراد اليوم مصفّر بالفعل', 'rose');
+                    return;
+                }
+
+                if (confirm('هل أنت تأكد من تصفير إيراد اليوم وترحيله للشهر؟')) {
+                    this.data.yesterday = this.data.today;
+                    this.data.today = 0;
+                    this.saveData();
+                    this.showToast('تم تصفير اليوم وترحيل الحسابات');
+                }
+            }
+
+            updateRevenueUI() {
+                document.getElementById('rev-today').innerText = `${this.data.today.toLocaleString()} د.ع`;
+                document.getElementById('rev-yesterday').innerText = `${this.data.yesterday.toLocaleString()} د.ع`;
+                document.getElementById('rev-month').innerText = `${this.data.month.toLocaleString()} د.ع`;
+            }
+
+            renderInvoices() {
+                const container = document.getElementById('invoices-list');
+                const countBadge = document.getElementById('invoice-count');
+                
+                countBadge.innerText = `${this.data.invoices.length} فاتورة`;
+
+                if (this.data.invoices.length === 0) {
+                    container.innerHTML = `<div class="text-center py-10 text-gray-500 text-sm">لا توجد فواتير مسجلة بعد</div>`;
+                    return;
+                }
+
+                container.innerHTML = this.data.invoices.map(inv => `
+                    <div class="glass-panel p-3.5 rounded-xl border border-gray-800/80 flex items-center justify-between">
+                        <div>
+                            <div class="font-bold text-white text-sm flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                ${inv.category}
+                            </div>
+                            <div class="text-[11px] text-gray-500 font-semibold mt-0.5">${inv.time} - ${inv.date}</div>
+                        </div>
+                        <div class="text-emerald-400 font-extrabold num-font text-base">
+                            +${inv.amount.toLocaleString()} د.ع
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            showToast(msg, color = 'emerald') {
+                const toast = document.getElementById('toast');
+                const msgEl = document.getElementById('toast-msg');
+                
+                msgEl.innerText = msg;
+                toast.className = `fixed bottom-6 left-1/2 transform -translate-x-1/2 ${color === 'emerald' ? 'bg-emerald-500 text-gray-950' : 'bg-rose-500 text-white'} font-extrabold px-6 py-3 rounded-full shadow-2xl transition-all duration-300 z-50 flex items-center gap-2 opacity-100 scale-100`;
+
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'pointer-events-none');
+                }, 2500);
+            }
+        }
+
+        // Initialize App Instance
+        const app = new VapePOSApp();
+    </script>
+</body>
+</html>
