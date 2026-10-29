@@ -2,252 +2,458 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VAPE POS SYSTEM | نظام المبيعات</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#030407">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>MAZAJ VAPE POS</title>
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
+    <!-- Font Awesome 6 Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts: Cairo & Orbitron -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
-    
+
     <style>
+        :root {
+            --bg-midnight: #030407;
+            --cobalt-blue: #1558C9;
+            --acid-lime: #D4FF24;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Cairo', sans-serif;
-            background-color: #0B0F19;
+            background-color: var(--bg-midnight);
             color: #E2E8F0;
             user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            background-image: 
+                radial-gradient(circle at 10% 15%, rgba(21, 88, 201, 0.18) 0%, transparent 40%),
+                radial-gradient(circle at 90% 85%, rgba(212, 255, 36, 0.08) 0%, transparent 40%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            padding-bottom: env(safe-area-inset-bottom);
         }
+
         .num-font { font-family: 'Orbitron', monospace; }
-        .glass-panel {
-            background: rgba(17, 24, 39, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.07);
+
+        /* Glassmorphism Classes */
+        .glass-card {
+            background: rgba(10, 14, 26, 0.78);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(21, 88, 201, 0.25);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
         }
-        .neon-border:focus-within {
-            border-color: #10B981;
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+
+        .glass-card-lime {
+            background: rgba(10, 14, 26, 0.88);
+            backdrop-filter: blur(18px);
+            border: 1.5px solid rgba(212, 255, 36, 0.4);
+            box-shadow: 0 0 25px rgba(212, 255, 36, 0.12);
         }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0B0F19; }
-        ::-webkit-scrollbar-thumb { background: #1F2937; border-radius: 4px; }
+
+        .lime-glow:focus-within {
+            border-color: #D4FF24;
+            box-shadow: 0 0 25px rgba(212, 255, 36, 0.3);
+        }
+
+        /* Fast Responsive Touch Feedback */
+        .touch-action-btn {
+            cursor: pointer;
+            transition: transform 0.08s ease, filter 0.08s ease;
+        }
+        .touch-action-btn:active {
+            transform: scale(0.96);
+            filter: brightness(1.15);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #030407; }
+        ::-webkit-scrollbar-thumb { background: #1558C9; border-radius: 4px; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between overflow-x-hidden">
+<body class="flex flex-col justify-between overflow-x-hidden selection:bg-[#D4FF24] selection:text-black">
 
-    <!-- Navbar / Header -->
-    <header class="glass-panel sticky top-0 z-30 px-4 py-3 flex items-center justify-between border-b border-gray-800">
+    <!-- Top Header -->
+    <header class="glass-card sticky top-0 z-30 px-4 py-3 flex items-center justify-between border-b border-blue-900/40">
         <div class="flex items-center gap-3">
-            <button id="menu-btn" class="w-10 h-10 rounded-xl bg-gray-800/80 hover:bg-gray-700 flex items-center justify-center text-emerald-400 text-xl transition active:scale-95">
-                <i class="fa-solid fa-bars"></i>
+            <button id="menu-btn" aria-label="فتح القائمة" class="w-10 h-10 rounded-xl bg-blue-950/60 hover:bg-blue-900/50 border border-blue-500/30 flex items-center justify-center text-[#D4FF24] text-xl touch-action-btn shadow-md">
+                <i class="fa-solid fa-bars pointer-events-none"></i>
             </button>
-            <h1 class="font-extrabold text-lg text-white tracking-wide">VAPE <span class="text-emerald-400">POS</span></h1>
+            <h1 class="font-black text-xl text-white tracking-wider num-font">MAZAJ <span class="text-[#D4FF24]">VAPE</span></h1>
         </div>
         
-        <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span class="text-xs text-gray-400 font-semibold">متصل محلياً</span>
+        <div id="cloud-status-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-950/60 border border-blue-500/30">
+            <span id="cloud-indicator" class="w-2.5 h-2.5 rounded-full bg-[#D4FF24] animate-pulse"></span>
+            <span id="cloud-status-text" class="text-xs text-blue-200 font-bold">متصل سحابياً</span>
         </div>
     </header>
 
-    <!-- Sidebar Drawer (3 Lines Menu) -->
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden transition-opacity duration-300"></div>
-    <aside id="sidebar" class="fixed top-0 right-0 h-full w-72 bg-gray-900 border-l border-gray-800 z-50 transform translate-x-full transition-transform duration-300 flex flex-col justify-between p-5">
+    <!-- Sidebar Drawer -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/85 backdrop-blur-md z-40 hidden transition-opacity duration-300"></div>
+    <aside id="sidebar" class="fixed top-0 right-0 h-full w-72 glass-card border-l border-blue-500/30 z-50 transform translate-x-full transition-transform duration-300 flex flex-col justify-between p-5">
         <div>
-            <div class="flex items-center justify-between pb-6 mb-6 border-b border-gray-800">
-                <h2 class="text-lg font-bold text-emerald-400 flex items-center gap-2">
-                    <i class="fa-solid fa-bolt"></i> القائمة الرئيسية
+            <div class="flex items-center justify-between pb-5 mb-5 border-b border-blue-900/30">
+                <h2 class="text-base font-black text-[#D4FF24] flex items-center gap-2">
+                    <i class="fa-solid fa-bolt"></i> لوحة التحكم
                 </h2>
-                <button id="close-sidebar-btn" class="text-gray-400 hover:text-white text-xl">
-                    <i class="fa-solid fa-xmark"></i>
+                <button id="close-sidebar-btn" aria-label="إغلاق القائمة" class="w-8 h-8 rounded-lg bg-blue-950/50 flex items-center justify-center text-gray-400 hover:text-white touch-action-btn">
+                    <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
-            <nav class="space-y-2">
-                <button onclick="app.switchTab('pos')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition text-right text-emerald-400 bg-emerald-500/10 border border-emerald-500/30" data-tab="pos">
-                    <i class="fa-solid fa-cash-register w-6 text-center"></i> شاشة البيع السريع
+            <nav class="space-y-2.5">
+                <button id="nav-btn-pos" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition text-right text-[#D4FF24] bg-blue-600/20 border border-[#D4FF24]/40 shadow-lg touch-action-btn" data-tab="pos">
+                    <i class="fa-solid fa-cash-register w-6 text-center text-lg"></i> شاشة البيع السريع
                 </button>
-                <button onclick="app.switchTab('revenue')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition text-right text-gray-400 hover:bg-gray-800 hover:text-white" data-tab="revenue">
-                    <i class="fa-solid fa-chart-line w-6 text-center"></i> تقارير الإيرادات
+                <button id="nav-btn-revenue" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition text-right text-gray-300 hover:bg-blue-950/40 hover:text-white border border-transparent touch-action-btn" data-tab="revenue">
+                    <i class="fa-solid fa-chart-line w-6 text-center text-[#1558C9] text-lg"></i> تقارير الإيرادات
                 </button>
-                <button onclick="app.switchTab('invoices')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition text-right text-gray-400 hover:bg-gray-800 hover:text-white" data-tab="invoices">
-                    <i class="fa-solid fa-receipt w-6 text-center"></i> سجل الفواتير
+                <button id="nav-btn-invoices" class="nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition text-right text-gray-300 hover:bg-blue-950/40 hover:text-white border border-transparent touch-action-btn" data-tab="invoices">
+                    <i class="fa-solid fa-receipt w-6 text-center text-[#1558C9] text-lg"></i> سجل الفواتير
                 </button>
             </nav>
         </div>
 
-        <div class="text-xs text-gray-500 text-center border-t border-gray-800 pt-4">
-            تطبيق كاشير الفيب v2.5 | جاهز للربط السحابي
+        <div class="text-[11px] text-gray-400 text-center border-t border-blue-900/30 pt-4 font-mono">
+            Firebase Cloud Sync • v6.0 Pro
         </div>
     </aside>
 
-    <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 p-4 max-w-lg mx-auto w-full">
+    <!-- Main Screens Container -->
+    <main class="flex-1 p-4 max-w-lg mx-auto w-full space-y-5">
 
-        <!-- SECTION 1: QUICK POS (قسم البيع) -->
+        <!-- SCREEN 1: POS QUICK SALE -->
         <section id="tab-pos" class="space-y-5">
-            <!-- 1. Category Fast Selection -->
+            <!-- Neon Vape Shop Vector Card -->
+            <div class="relative w-full h-36 rounded-2xl overflow-hidden glass-card border border-blue-500/30 flex items-end p-4 shadow-2xl">
+                <svg class="absolute inset-0 w-full h-full object-cover opacity-75" viewBox="0 0 800 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="800" height="400" fill="#030407"/>
+                    <path d="M-50 300C100 150 250 380 400 220C550 60 700 320 850 180V400H-50V300Z" fill="url(#smoke-grad-1)" opacity="0.45"/>
+                    <path d="M-100 180C150 320 300 80 500 240C700 400 750 120 900 260V400H-100V180Z" fill="url(#smoke-grad-2)" opacity="0.35"/>
+                    <g transform="translate(560, 50)">
+                        <rect x="50" y="80" width="90" height="180" rx="16" fill="#0A0E1A" stroke="#1558C9" stroke-width="4"/>
+                        <line x1="65" y1="100" x2="65" y2="240" stroke="#D4FF24" stroke-width="6" stroke-linecap="round"/>
+                        <rect x="75" y="30" width="40" height="50" rx="6" fill="#1558C9" opacity="0.6" stroke="#D4FF24" stroke-width="2"/>
+                        <rect x="88" y="10" width="14" height="20" rx="4" fill="#D4FF24"/>
+                        <circle cx="95" cy="-10" r="15" stroke="#D4FF24" stroke-width="2" opacity="0.4"/>
+                        <circle cx="110" cy="-35" r="25" stroke="#1558C9" stroke-width="3" opacity="0.3"/>
+                    </g>
+                    <defs>
+                        <linearGradient id="smoke-grad-1" x1="0" y1="0" x2="800" y2="400" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#1558C9"/>
+                            <stop offset="1" stop-color="#D4FF24"/>
+                        </linearGradient>
+                        <linearGradient id="smoke-grad-2" x1="800" y1="0" x2="0" y2="400" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#D4FF24"/>
+                            <stop offset="1" stop-color="#1558C9"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+
+                <div class="absolute inset-0 bg-gradient-to-t from-[#030407] via-[#030407]/40 to-transparent"></div>
+                <div class="relative z-10 space-y-0.5">
+                    <span class="text-[10px] font-extrabold text-[#D4FF24] uppercase tracking-wider bg-[#D4FF24]/10 px-2 py-0.5 rounded-full border border-[#D4FF24]/30">نظام المبيعات الفوري</span>
+                    <h2 class="text-2xl font-black text-white tracking-wide num-font">MAZAJ VAPE</h2>
+                    <p class="text-xs text-gray-300 font-semibold">تسجيل ومزامنة سحابية فائقة السرعة</p>
+                </div>
+            </div>
+
+            <!-- Categories Selection -->
             <div class="space-y-2">
-                <label class="text-xs text-gray-400 font-bold block">1. اختر نوع القطعة:</label>
-                <div class="grid grid-cols-3 gap-2">
-                    <button type="button" onclick="app.selectCategory('سحبة')" class="cat-btn py-3 px-2 rounded-xl bg-gray-800 border border-emerald-500/50 text-emerald-400 font-bold text-center transition active:scale-95" data-cat="سحبة">سحبة</button>
-                    <button type="button" onclick="app.selectCategory('كاترج')" class="cat-btn py-3 px-2 rounded-xl bg-gray-800/60 border border-gray-700 text-gray-300 font-bold text-center transition active:scale-95" data-cat="كاترج">كاترج</button>
-                    <button type="button" onclick="app.selectCategory('بطارية')" class="cat-btn py-3 px-2 rounded-xl bg-gray-800/60 border border-gray-700 text-gray-300 font-bold text-center transition active:scale-95" data-cat="بطارية">بطارية</button>
-                    <button type="button" onclick="app.selectCategory('جوز/نكهة')" class="cat-btn py-3 px-2 rounded-xl bg-gray-800/60 border border-gray-700 text-gray-300 font-bold text-center transition active:scale-95" data-cat="جوز/نكهة">جوز/نكهة</button>
-                    <button type="button" onclick="app.selectCategory('كويل')" class="cat-btn py-3 px-2 rounded-xl bg-gray-800/60 border border-gray-700 text-gray-300 font-bold text-center transition active:scale-95" data-cat="كويل">كويل</button>
-                    <button type="button" onclick="app.selectCategory('جهاز')" class="cat-btn py-3 px-2 rounded-xl bg-gray-800/60 border border-gray-700 text-gray-300 font-bold text-center transition active:scale-95" data-cat="جهاز">جهاز</button>
+                <label class="text-xs text-blue-300/90 font-bold block">1. اختر نوع الصنف:</label>
+                <div class="grid grid-cols-3 gap-2" id="category-container">
+                    <button type="button" data-cat="سحبة" class="cat-btn py-3 px-2 rounded-2xl glass-card-lime text-[#D4FF24] font-black text-sm text-center touch-action-btn">سحبة</button>
+                    <button type="button" data-cat="كاترج" class="cat-btn py-3 px-2 rounded-2xl glass-card text-gray-300 font-bold text-sm text-center touch-action-btn">كاترج</button>
+                    <button type="button" data-cat="بطارية" class="cat-btn py-3 px-2 rounded-2xl glass-card text-gray-300 font-bold text-sm text-center touch-action-btn">بطارية</button>
+                    <button type="button" data-cat="جوز/نكهة" class="cat-btn py-3 px-2 rounded-2xl glass-card text-gray-300 font-bold text-sm text-center touch-action-btn">جوز/نكهة</button>
+                    <button type="button" data-cat="كويل" class="cat-btn py-3 px-2 rounded-2xl glass-card text-gray-300 font-bold text-sm text-center touch-action-btn">كويل</button>
+                    <button type="button" data-cat="جهاز" class="cat-btn py-3 px-2 rounded-2xl glass-card text-gray-300 font-bold text-sm text-center touch-action-btn">جهاز</button>
                 </div>
             </div>
 
-            <!-- 2. Direct Price Input -->
-            <div class="glass-panel p-4 rounded-2xl space-y-3 border border-gray-800 neon-border">
-                <label for="price-input" class="text-xs text-gray-400 font-bold flex justify-between">
-                    <span>2. ادخل السعر مباشرة:</span>
-                    <span class="text-emerald-400 font-semibold">مثال: يكتب 18 تحسب 18,000 د.ع</span>
-                </label>
+            <!-- Price Input & Quick Grid -->
+            <div class="space-y-2.5">
+                <label class="text-xs text-blue-300/90 font-bold block">2. حدد السعر أو اكتبه:</label>
                 
-                <div class="relative flex items-center">
-                    <input type="number" id="price-input" placeholder="0" autofocus min="1" step="any"
-                        class="w-full bg-gray-900 border border-gray-700 text-emerald-400 text-3xl font-extrabold rounded-xl py-3 px-4 text-left num-font focus:outline-none focus:border-emerald-500 transition">
-                    <span class="absolute right-4 text-gray-400 font-bold text-sm pointer-events-none">د.ع</span>
+                <div class="glass-card p-2.5 rounded-2xl lime-glow transition-all">
+                    <div class="relative flex items-center bg-[#030407]/90 border border-blue-500/30 rounded-xl px-3 py-1">
+                        <input type="number" id="price-input" placeholder="0" inputmode="decimal" pattern="[0-9]*" dir="ltr"
+                            class="w-full bg-transparent text-[#D4FF24] text-3xl font-black num-font focus:outline-none py-1.5 text-left">
+                        <span class="text-gray-300 font-bold text-sm pr-3 border-r border-gray-800 shrink-0">د.ع</span>
+                    </div>
                 </div>
 
-                <!-- Shortcuts for Quick Amounts -->
-                <div class="flex gap-2 pt-1">
-                    <button type="button" onclick="app.setQuickPrice(3)" class="flex-1 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs font-bold num-font">3,000</button>
-                    <button type="button" onclick="app.setQuickPrice(6)" class="flex-1 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs font-bold num-font">6,000</button>
-                    <button type="button" onclick="app.setQuickPrice(15)" class="flex-1 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs font-bold num-font">15,000</button>
-                    <button type="button" onclick="app.setQuickPrice(18)" class="flex-1 py-1.5 bg-emerald-950 text-emerald-400 border border-emerald-800/50 rounded-lg text-xs font-bold num-font">18,000</button>
+                <!-- Quick Price Big Buttons -->
+                <div class="grid grid-cols-2 gap-2.5" dir="ltr">
+                    <button type="button" data-price="5" class="quick-price-btn glass-card hover:border-[#D4FF24] p-4 rounded-2xl flex flex-col items-center justify-center gap-0.5 touch-action-btn shadow-md">
+                        <span class="text-2xl font-black text-white num-font pointer-events-none">5,000</span>
+                        <span class="text-[11px] font-bold text-gray-400 pointer-events-none">دينار</span>
+                    </button>
+                    
+                    <button type="button" data-price="15" class="quick-price-btn glass-card hover:border-[#D4FF24] p-4 rounded-2xl flex flex-col items-center justify-center gap-0.5 touch-action-btn shadow-md">
+                        <span class="text-2xl font-black text-white num-font pointer-events-none">15,000</span>
+                        <span class="text-[11px] font-bold text-gray-400 pointer-events-none">دينار</span>
+                    </button>
+
+                    <button type="button" data-price="18" class="quick-price-btn glass-card-lime p-4 rounded-2xl flex flex-col items-center justify-center gap-0.5 touch-action-btn shadow-xl">
+                        <span class="text-2xl font-black text-[#D4FF24] num-font pointer-events-none">18,000</span>
+                        <span class="text-[11px] font-black text-emerald-300 pointer-events-none">الأكثر مبيعاً ⭐</span>
+                    </button>
+
+                    <button type="button" data-price="20" class="quick-price-btn glass-card hover:border-[#D4FF24] p-4 rounded-2xl flex flex-col items-center justify-center gap-0.5 touch-action-btn shadow-md">
+                        <span class="text-2xl font-black text-white num-font pointer-events-none">20,000</span>
+                        <span class="text-[11px] font-bold text-gray-400 pointer-events-none">دينار</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Submit Sale Button -->
-            <button onclick="app.processSale()" class="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-gray-950 font-black text-lg rounded-2xl shadow-lg shadow-emerald-500/20 active:scale-95 transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-check-circle text-xl"></i> إتمام البيع والتسجيل
-            </button>
+            <!-- Bulletproof Sell Button -->
+            <div class="pt-2">
+                <button type="button" id="submit-sale-btn" class="w-full py-4 bg-[#D4FF24] hover:bg-[#c2eb1c] text-[#030407] font-black text-xl rounded-2xl shadow-xl shadow-[#D4FF24]/20 touch-action-btn flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-circle-check text-2xl pointer-events-none"></i>
+                    <span id="submit-btn-text" class="pointer-events-none">إتمام البيع والتسجيل</span>
+                </button>
+            </div>
         </section>
 
-
-        <!-- SECTION 2: REVENUE DASHBOARD (قسم الإيرادات) -->
+        <!-- SCREEN 2: REVENUE -->
         <section id="tab-revenue" class="space-y-4 hidden">
             <h2 class="text-base font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-chart-pie text-emerald-400"></i> ملخص الإيرادات المالية
+                <i class="fa-solid fa-chart-pie text-[#D4FF24]"></i> ملخص الإيرادات المالية
             </h2>
 
-            <div class="grid grid-cols-1 gap-3">
-                <!-- Today -->
-                <div class="glass-panel p-4 rounded-2xl border-r-4 border-r-emerald-500">
-                    <span class="text-xs text-gray-400 font-bold block mb-1">إيراد مبيعات اليوم (اليوم):</span>
-                    <div class="text-3xl font-black text-emerald-400 num-font" id="rev-today">0 د.ع</div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="glass-card-lime p-4 rounded-2xl border-t-4 border-t-[#D4FF24] flex flex-col items-center justify-center text-center gap-1.5 col-span-2 min-h-[120px]">
+                    <span class="text-xs text-gray-300 font-bold">إيراد مبيعات اليوم</span>
+                    <div class="text-3xl font-black text-[#D4FF24] num-font" id="rev-today">0</div>
+                    <span class="text-[11px] font-extrabold text-emerald-400">دينار عراقي</span>
                 </div>
 
-                <!-- Yesterday -->
-                <div class="glass-panel p-4 rounded-2xl border-r-4 border-r-cyan-500">
-                    <span class="text-xs text-gray-400 font-bold block mb-1">إيراد يوم الأمس (المطحل):</span>
-                    <div class="text-2xl font-bold text-cyan-300 num-font" id="rev-yesterday">0 د.ع</div>
+                <div class="glass-card p-4 rounded-2xl border-t-4 border-t-[#1558C9] flex flex-col items-center justify-center text-center gap-1.5 min-h-[120px]">
+                    <span class="text-xs text-gray-300 font-bold">إيراد الأمس</span>
+                    <div class="text-xl font-bold text-blue-300 num-font" id="rev-yesterday">0</div>
+                    <span class="text-[11px] font-bold text-blue-300/70">دينار عراقي</span>
                 </div>
 
-                <!-- Month -->
-                <div class="glass-panel p-4 rounded-2xl border-r-4 border-r-purple-500">
-                    <span class="text-xs text-gray-400 font-bold block mb-1">إيراد الشهر الحالي التراكمي:</span>
-                    <div class="text-2xl font-bold text-purple-300 num-font" id="rev-month">0 د.ع</div>
+                <div class="glass-card p-4 rounded-2xl border-t-4 border-t-purple-500 flex flex-col items-center justify-center text-center gap-1.5 min-h-[120px]">
+                    <span class="text-xs text-gray-300 font-bold">إيراد الشهر</span>
+                    <div class="text-xl font-bold text-purple-300 num-font" id="rev-month">0</div>
+                    <span class="text-[11px] font-bold text-purple-300/70">دينار عراقي</span>
                 </div>
             </div>
 
-            <!-- Reset Day Button -->
-            <div class="pt-4">
-                <button onclick="app.confirmResetDay()" class="w-full py-3.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition active:scale-95">
-                    <i class="fa-solid fa-rotate text-lg"></i> تصفير اليوم وترحيل الإيراد للشهر
+            <div class="pt-2">
+                <button id="reset-day-btn" class="w-full py-3.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 touch-action-btn">
+                    <i class="fa-solid fa-rotate text-lg pointer-events-none"></i> تصفير اليوم وترحيل الإيراد للشهر
                 </button>
-                <p class="text-[11px] text-gray-500 text-center mt-2">يقوم بتصفير إيراد اليوم ونقله للأمس وإضافته كلياً للحساب الشهري</p>
             </div>
         </section>
 
-
-        <!-- SECTION 3: INVOICES HISTORY (قسم الفواتير) -->
+        <!-- SCREEN 3: INVOICES -->
         <section id="tab-invoices" class="space-y-4 hidden">
             <div class="flex items-center justify-between">
                 <h2 class="text-base font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-clock-history text-emerald-400"></i> سجل الفواتير والمبيعات
+                    <i class="fa-solid fa-receipt text-[#D4FF24]"></i> سجل الفواتير المباشر
                 </h2>
-                <span id="invoice-count" class="text-xs font-bold text-gray-400 bg-gray-800 px-2.5 py-1 rounded-full">0 فاتورة</span>
+                <span id="invoice-count" class="text-xs font-bold text-blue-200 bg-blue-950/70 border border-blue-500/30 px-3 py-1 rounded-full">0 فاتورة</span>
             </div>
 
-            <div id="invoices-list" class="space-y-2.5 max-h-[70vh] overflow-y-auto pr-1">
-                <!-- Invoices rendered dynamically -->
+            <div id="invoices-list" class="space-y-2.5 max-h-[68vh] overflow-y-auto pr-1">
+                <div class="text-center py-10 text-gray-500 text-sm">جاري تحميل الفواتير من السحابة...</div>
             </div>
         </section>
 
     </main>
 
-    <!-- Toast Notification System -->
-    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-emerald-500 text-gray-950 font-extrabold px-6 py-3 rounded-full shadow-2xl transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center gap-2">
-        <i class="fa-solid fa-circle-check"></i> <span id="toast-msg">تم الحفظ بنجاح</span>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-[#D4FF24] text-[#030407] font-black px-6 py-3.5 rounded-full shadow-2xl transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center gap-3 border border-black/20 max-w-[92vw]">
+        <i class="fa-solid fa-circle-check text-xl shrink-0"></i> 
+        <span id="toast-msg" class="text-sm truncate">تم التسجيل بنجاح</span>
     </div>
 
-    <!-- Application Controller Logic -->
-    <script>
-        /**
-         * System Core Controller Architecture
-         */
-        class VapePOSApp {
+    <!-- Firebase SDK Modular Import & POS Logic Engine -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            getDocs, 
+            query, 
+            orderBy, 
+            limit, 
+            onSnapshot, 
+            doc, 
+            setDoc, 
+            getDoc,
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Your Exact Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyADUabKWl4XTkCjebRkrFtJP5ka8WCbN68",
+            authDomain: "vap3-407ce.firebaseapp.com",
+            projectId: "vap3-407ce",
+            storageBucket: "vap3-407ce.firebasestorage.app",
+            messagingSenderId: "186515506545",
+            appId: "1:186515506545:web:5375c8727be402e030e2d0",
+            measurementId: "G-CZ0HS3JL7F"
+        };
+
+        // Initialize Firebase & Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Sound System (Synthesized POS Chime - No External MP3 Required)
+        const playBeep = () => {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(880, ctx.currentTime); // High pitch POS beep
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.15);
+            } catch (e) {
+                // AudioContext silent fallback
+            }
+        };
+
+        // Haptic Feedback for Mobile Phones
+        const vibrateMobile = () => {
+            if ("vibrate" in navigator) {
+                navigator.vibrate([35]);
+            }
+        };
+
+        // Modern Mobile POS Controller
+        class MazajPOS {
             constructor() {
                 this.selectedCategory = 'سحبة';
-                this.data = this.loadData();
-                this.initUI();
-            }
+                this.toastTimeout = null;
+                this.localData = this.loadLocalBackup();
+                this.isOnline = navigator.onLine;
 
-            loadData() {
-                const defaultData = {
-                    today: 0,
-                    yesterday: 0,
-                    month: 0,
-                    invoices: []
-                };
-                const saved = localStorage.getItem('vape_pos_db');
-                return saved ? JSON.parse(saved) : defaultData;
-            }
-
-            saveData() {
-                localStorage.setItem('vape_pos_db', JSON.stringify(this.data));
-                this.updateRevenueUI();
-                this.renderInvoices();
-            }
-
-            initUI() {
+                this.initDOM();
                 this.bindEvents();
+                this.setupRealtimeFirestore();
                 this.updateRevenueUI();
-                this.renderInvoices();
+                this.renderInvoicesUI();
+            }
+
+            loadLocalBackup() {
+                try {
+                    const saved = localStorage.getItem('mazaj_vape_cache_v5');
+                    return saved ? JSON.parse(saved) : { today: 0, yesterday: 0, month: 0, invoices: [] };
+                } catch {
+                    return { today: 0, yesterday: 0, month: 0, invoices: [] };
+                }
+            }
+
+            saveLocalBackup() {
+                try {
+                    localStorage.setItem('mazaj_vape_cache_v5', JSON.stringify(this.localData));
+                } catch (e) {
+                    console.error("Local backup error", e);
+                }
+            }
+
+            initDOM() {
+                this.priceInput = document.getElementById('price-input');
+                this.submitBtn = document.getElementById('submit-sale-btn');
+                this.cloudBadge = document.getElementById('cloud-status-text');
+                this.cloudDot = document.getElementById('cloud-indicator');
             }
 
             bindEvents() {
-                // Sidebar toggle
-                const menuBtn = document.getElementById('menu-btn');
-                const closeBtn = document.getElementById('close-sidebar-btn');
-                const overlay = document.getElementById('sidebar-overlay');
-                const sidebar = document.getElementById('sidebar');
+                // Category selection
+                document.querySelectorAll('.cat-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.selectedCategory = btn.getAttribute('data-cat');
+                        document.querySelectorAll('.cat-btn').forEach(b => {
+                            b.className = "cat-btn py-3 px-2 rounded-2xl glass-card text-gray-300 font-bold text-sm text-center touch-action-btn";
+                        });
+                        btn.className = "cat-btn py-3 px-2 rounded-2xl glass-card-lime text-[#D4FF24] font-black text-sm text-center touch-action-btn";
+                        vibrateMobile();
+                    });
+                });
 
-                const openMenu = () => {
+                // Quick price cards
+                document.querySelectorAll('.quick-price-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const val = btn.getAttribute('data-price');
+                        this.priceInput.value = val;
+                        vibrateMobile();
+                    });
+                });
+
+                // Sell Button Click (100% Guaranteed Execution)
+                this.submitBtn.addEventListener('click', () => this.executeSale());
+
+                // Enter Key Submit
+                this.priceInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.executeSale();
+                    }
+                });
+
+                // Reset Day Button
+                document.getElementById('reset-day-btn').addEventListener('click', () => this.resetDaySummary());
+
+                // Navigation Tabs
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const tab = btn.getAttribute('data-tab');
+                        this.switchTab(tab);
+                    });
+                });
+
+                // Sidebar controls
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
+                document.getElementById('menu-btn').addEventListener('click', () => {
                     sidebar.classList.remove('translate-x-full');
                     overlay.classList.remove('hidden');
-                };
+                });
                 const closeMenu = () => {
                     sidebar.classList.add('translate-x-full');
                     overlay.classList.add('hidden');
                 };
-
-                menuBtn.addEventListener('click', openMenu);
-                closeBtn.addEventListener('click', closeMenu);
+                document.getElementById('close-sidebar-btn').addEventListener('click', closeMenu);
                 overlay.addEventListener('click', closeMenu);
 
-                // Auto parse keyboard shortcut numbers
-                document.getElementById('price-input').addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        this.processSale();
-                    }
-                });
+                // Online/Offline Listeners
+                window.addEventListener('online', () => this.setCloudStatus(true));
+                window.addEventListener('offline', () => this.setCloudStatus(false));
+            }
+
+            setCloudStatus(isOnline) {
+                this.isOnline = isOnline;
+                if (isOnline) {
+                    this.cloudBadge.textContent = "متصل سحابياً";
+                    this.cloudBadge.className = "text-xs text-blue-200 font-bold";
+                    this.cloudDot.className = "w-2.5 h-2.5 rounded-full bg-[#D4FF24] animate-pulse";
+                } else {
+                    this.cloudBadge.textContent = "محلي (أوفلاين)";
+                    this.cloudBadge.className = "text-xs text-rose-300 font-bold";
+                    this.cloudDot.className = "w-2.5 h-2.5 rounded-full bg-rose-500";
+                }
             }
 
             switchTab(tabName) {
@@ -256,129 +462,199 @@
 
                 document.querySelectorAll('.nav-btn').forEach(btn => {
                     if(btn.getAttribute('data-tab') === tabName) {
-                        btn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition text-right text-emerald-400 bg-emerald-500/10 border border-emerald-500/30";
+                        btn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition text-right text-[#D4FF24] bg-blue-600/20 border border-[#D4FF24]/40 shadow-lg touch-action-btn";
                     } else {
-                        btn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition text-right text-gray-400 hover:bg-gray-800 hover:text-white";
+                        btn.className = "nav-btn w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-bold transition text-right text-gray-300 hover:bg-blue-950/40 hover:text-white border border-transparent touch-action-btn";
                     }
                 });
 
-                document.getElementById('sidebar-overlay').click(); // Close drawer
+                document.getElementById('sidebar-overlay').click();
             }
 
-            selectCategory(cat) {
-                this.selectedCategory = cat;
-                document.querySelectorAll('.cat-btn').forEach(btn => {
-                    if(btn.getAttribute('data-cat') === cat) {
-                        btn.className = "cat-btn py-3 px-2 rounded-xl bg-gray-800 border border-emerald-500/50 text-emerald-400 font-bold text-center transition active:scale-95";
-                    } else {
-                        btn.className = "cat-btn py-3 px-2 rounded-xl bg-gray-800/60 border border-gray-700 text-gray-300 font-bold text-center transition active:scale-95";
-                    }
-                });
-            }
-
-            setQuickPrice(val) {
-                document.getElementById('price-input').value = val;
-            }
-
-            parseAmount(inputVal) {
-                let num = parseFloat(inputVal);
+            parseAmount(rawVal) {
+                let num = parseFloat(rawVal);
                 if (isNaN(num) || num <= 0) return 0;
-                // If user types small shortcut numbers like 18 or 6, treat as thousands (18000 or 6000)
-                if (num < 1000) {
-                    num = num * 1000;
-                }
-                return num;
+                // If user wrote 5 or 18, convert to 5,000 or 18,000 IQD
+                if (num < 1000) num = num * 1000;
+                return Math.floor(num);
             }
 
-            processSale() {
-                const inputEl = document.getElementById('price-input');
-                const rawVal = inputEl.value;
-                const finalAmount = this.parseAmount(rawVal);
+            async executeSale() {
+                const amount = this.parseAmount(this.priceInput.value);
 
-                if (finalAmount <= 0) {
-                    this.showToast('يرجى كتابة السعر أولاً', 'rose');
+                if (amount <= 0) {
+                    vibrateMobile();
+                    this.showToast('يرجى تحديد أو كتابة السعر أولاً', 'rose');
+                    this.priceInput.focus();
                     return;
                 }
 
-                const newInvoice = {
-                    id: Date.now(),
+                // Interactive Feedback
+                playBeep();
+                vibrateMobile();
+
+                const invoiceRecord = {
                     category: this.selectedCategory,
-                    amount: finalAmount,
-                    time: new Date().toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' }),
-                    date: new Date().toLocaleDateString('ar-IQ')
+                    amount: amount,
+                    createdAt: serverTimestamp(),
+                    dateStr: new Date().toLocaleDateString('ar-IQ'),
+                    timeStr: new Date().toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' })
                 };
 
-                this.data.today += finalAmount;
-                this.data.month += finalAmount;
-                this.data.invoices.unshift(newInvoice);
+                // Instant UI Update & Local Cache Fallback
+                this.localData.today += amount;
+                this.localData.month += amount;
+                this.localData.invoices.unshift({
+                    ...invoiceRecord,
+                    id: 'temp_' + Date.now(),
+                    dateStr: invoiceRecord.dateStr,
+                    timeStr: invoiceRecord.timeStr
+                });
+                this.saveLocalBackup();
+                this.updateRevenueUI();
+                this.renderInvoicesUI();
 
-                this.saveData();
-                inputEl.value = '';
-                this.showToast(`تم بيع ${this.selectedCategory} بـ ${finalAmount.toLocaleString()} د.ع`);
+                // Clear & Blur Input
+                this.priceInput.value = '';
+                this.priceInput.blur();
+                this.showToast(`تم بيع ${this.selectedCategory} بقيمة ${amount.toLocaleString()} د.ع`);
+
+                // Cloud Sync to Firestore
+                try {
+                    await addDoc(collection(db, "invoices"), invoiceRecord);
+                    const summaryRef = doc(db, "finance", "summary");
+                    await setDoc(summaryRef, {
+                        today: this.localData.today,
+                        yesterday: this.localData.yesterday,
+                        month: this.localData.month,
+                        lastSaleAt: serverTimestamp()
+                    }, { merge: true });
+                } catch (err) {
+                    console.warn("Cloud sync will resume automatically when rules/network are ready:", err);
+                }
             }
 
-            confirmResetDay() {
-                if (this.data.today === 0) {
+            async resetDaySummary() {
+                if (this.localData.today === 0) {
                     this.showToast('إيراد اليوم مصفّر بالفعل', 'rose');
                     return;
                 }
 
-                if (confirm('هل أنت تأكد من تصفير إيراد اليوم وترحيله للشهر؟')) {
-                    this.data.yesterday = this.data.today;
-                    this.data.today = 0;
-                    this.saveData();
-                    this.showToast('تم تصفير اليوم وترحيل الحسابات');
+                if (confirm('هل أنت متأكد من تصفير إيراد اليوم وترحيله للشهر؟')) {
+                    this.localData.yesterday = this.localData.today;
+                    this.localData.today = 0;
+                    this.saveLocalBackup();
+                    this.updateRevenueUI();
+
+                    try {
+                        const summaryRef = doc(db, "finance", "summary");
+                        await setDoc(summaryRef, {
+                            today: 0,
+                            yesterday: this.localData.yesterday,
+                            month: this.localData.month,
+                            resetAt: serverTimestamp()
+                        }, { merge: true });
+                    } catch (e) {
+                        console.warn("Cloud summary update deferred:", e);
+                    }
+
+                    this.showToast('تم تصفير اليوم وترحيل الحسابات بنجاح');
+                }
+            }
+
+            setupRealtimeFirestore() {
+                // 1. Sync Invoices in Real-Time
+                try {
+                    const q = query(collection(db, "invoices"), orderBy("createdAt", "desc"), limit(40));
+                    onSnapshot(q, (snapshot) => {
+                        if (!snapshot.empty) {
+                            const cloudInvoices = [];
+                            snapshot.forEach(docSnap => {
+                                const data = docSnap.data();
+                                cloudInvoices.push({
+                                    id: docSnap.id,
+                                    category: data.category || 'صنف',
+                                    amount: data.amount || 0,
+                                    dateStr: data.dateStr || '',
+                                    timeStr: data.timeStr || ''
+                                });
+                            });
+                            this.localData.invoices = cloudInvoices;
+                            this.saveLocalBackup();
+                            this.renderInvoicesUI();
+                        }
+                    }, (error) => {
+                        console.warn("Firestore Snapshot Invoices Warning:", error.message);
+                    });
+
+                    // 2. Sync Financial Summary
+                    onSnapshot(doc(db, "finance", "summary"), (docSnap) => {
+                        if (docSnap.exists()) {
+                            const data = docSnap.data();
+                            this.localData.today = data.today ?? this.localData.today;
+                            this.localData.yesterday = data.yesterday ?? this.localData.yesterday;
+                            this.localData.month = data.month ?? this.localData.month;
+                            this.saveLocalBackup();
+                            this.updateRevenueUI();
+                        }
+                    }, (error) => {
+                        console.warn("Firestore Snapshot Summary Warning:", error.message);
+                    });
+
+                } catch (e) {
+                    console.error("Firestore setup error:", e);
                 }
             }
 
             updateRevenueUI() {
-                document.getElementById('rev-today').innerText = `${this.data.today.toLocaleString()} د.ع`;
-                document.getElementById('rev-yesterday').innerText = `${this.data.yesterday.toLocaleString()} د.ع`;
-                document.getElementById('rev-month').innerText = `${this.data.month.toLocaleString()} د.ع`;
+                document.getElementById('rev-today').innerText = this.localData.today.toLocaleString();
+                document.getElementById('rev-yesterday').innerText = this.localData.yesterday.toLocaleString();
+                document.getElementById('rev-month').innerText = this.localData.month.toLocaleString();
             }
 
-            renderInvoices() {
+            renderInvoicesUI() {
                 const container = document.getElementById('invoices-list');
-                const countBadge = document.getElementById('invoice-count');
-                
-                countBadge.innerText = `${this.data.invoices.length} فاتورة`;
+                const badge = document.getElementById('invoice-count');
+                badge.innerText = `${this.localData.invoices.length} فاتورة`;
 
-                if (this.data.invoices.length === 0) {
+                if (this.localData.invoices.length === 0) {
                     container.innerHTML = `<div class="text-center py-10 text-gray-500 text-sm">لا توجد فواتير مسجلة بعد</div>`;
                     return;
                 }
 
-                container.innerHTML = this.data.invoices.map(inv => `
-                    <div class="glass-panel p-3.5 rounded-xl border border-gray-800/80 flex items-center justify-between">
+                container.innerHTML = this.localData.invoices.map(inv => `
+                    <div class="glass-card p-3.5 rounded-2xl flex items-center justify-between border border-blue-500/20 hover:border-[#D4FF24]/40 transition">
                         <div>
                             <div class="font-bold text-white text-sm flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#D4FF24]"></span>
                                 ${inv.category}
                             </div>
-                            <div class="text-[11px] text-gray-500 font-semibold mt-0.5">${inv.time} - ${inv.date}</div>
+                            <div class="text-[11px] text-gray-400 font-semibold mt-0.5">${inv.timeStr || ''} • ${inv.dateStr || ''}</div>
                         </div>
-                        <div class="text-emerald-400 font-extrabold num-font text-base">
-                            +${inv.amount.toLocaleString()} د.ع
+                        <div class="text-[#D4FF24] font-black num-font text-base" dir="ltr">
+                            +${Number(inv.amount).toLocaleString()} د.ع
                         </div>
                     </div>
                 `).join('');
             }
 
-            showToast(msg, color = 'emerald') {
+            showToast(msg, color = 'lime') {
                 const toast = document.getElementById('toast');
                 const msgEl = document.getElementById('toast-msg');
-                
-                msgEl.innerText = msg;
-                toast.className = `fixed bottom-6 left-1/2 transform -translate-x-1/2 ${color === 'emerald' ? 'bg-emerald-500 text-gray-950' : 'bg-rose-500 text-white'} font-extrabold px-6 py-3 rounded-full shadow-2xl transition-all duration-300 z-50 flex items-center gap-2 opacity-100 scale-100`;
+                if (this.toastTimeout) clearTimeout(this.toastTimeout);
 
-                setTimeout(() => {
+                msgEl.innerText = msg;
+                toast.className = `fixed bottom-6 left-1/2 transform -translate-x-1/2 ${color === 'lime' ? 'bg-[#D4FF24] text-[#030407]' : 'bg-rose-500 text-white'} font-black px-6 py-3.5 rounded-full shadow-2xl transition-all duration-300 z-50 flex items-center gap-3 border border-black/20 opacity-100 scale-100 pointer-events-auto max-w-[92vw]`;
+
+                this.toastTimeout = setTimeout(() => {
+                    toast.classList.remove('opacity-100', 'scale-100');
                     toast.classList.add('opacity-0', 'pointer-events-none');
-                }, 2500);
+                }, 1200);
             }
         }
 
-        // Initialize App Instance
-        const app = new VapePOSApp();
+        // Run POS Instance directly in Window
+        window.mazajPOS = new MazajPOS();
     </script>
 </body>
 </html>
